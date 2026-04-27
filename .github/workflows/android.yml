@@ -15,7 +15,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6'   # стабильная версия с хорошей совместимостью
+          flutter-version: '3.41.7'   # Dart 3.11.7 подходит под требование ^3.11.4
           channel: 'stable'
 
       - name: Create missing directories and placeholder file
