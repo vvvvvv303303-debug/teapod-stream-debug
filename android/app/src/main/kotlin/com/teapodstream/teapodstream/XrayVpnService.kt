@@ -1146,7 +1146,7 @@ class XrayVpnService : VpnService() {
                 var read = 0; while (read < buf.size) read += inp.read(buf, read, buf.size - read)
             }
 
-            val request = "GET /generate_204 HTTP/1.1\r\nHost: $destHost\r\nConnection: close\r\n\r\n"
+            val request = "GET http://cp.cloudflare.com/generate_204 HTTP/1.1\r\nHost: cp.cloudflare.com\r\nConnection: close\r\n\r\n"
             out.write(request.toByteArray())
             out.flush()
 
