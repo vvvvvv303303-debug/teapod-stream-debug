@@ -15,14 +15,20 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.7'   # конкретная версия
+          flutter-version: '3.19.6'   # стабильная версия с хорошей совместимостью
           channel: 'stable'
+
+      - name: Create missing directories and placeholder file
+        run: |
+          mkdir -p assets/binaries
+          mkdir -p android/app/libs
+          touch android/app/libs/teapod-core.aar
 
       - name: Get Flutter dependencies
         run: flutter pub get
 
       - name: Build debug APK
-        run: flutter build apk --debug
+        run: flutter build apk --debug --no-tree-shake-icons
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
