@@ -43,43 +43,30 @@ jobs:
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
           gomobile init
 
-      - name: Initialize Go modules (if missing)
+      # Инициализируем модуль для teapod-tun2socks (если нет)
+      - name: Prepare teapod-tun2socks module
+        working-directory: teapod-tun2socks/go
         run: |
-          cd teapod-tun2socks/go
           if [ ! -f go.mod ]; then
             go mod init teapod-tun2socks
           fi
           go mod tidy || true
 
-          cd ${{ github.workspace }}/teapod-stream/teapod-core
-          if [ ! -f go.mod ]; then
-            go mod init teapod-core
-          fi
-          go mod tidy || true
-
-      - name: Debug Go module status
-        working-directory: teapod-stream/teapod-core
-        run: |
-          echo "=== Содержимое teapod-core ==="
-          ls -la
-          echo "=== Есть ли go.mod? ==="
-          if [ -f go.mod ]; then
-            cat go.mod
-          else
-            echo "go.mod отсутствует, создаём..."
-            go mod init teapod-core
-            cat go.mod
-          fi
-          echo "=== GO111MODULE ==="
-          go env GO111MODULE
-          echo "=== Попытка go mod tidy ==="
-          go mod tidy || echo "go mod tidy завершился с ошибкой, но это может быть некритично"
-
-      - name: Build teapod-core AAR
+      # Главный шаг: принудительно создаём go.mod для teapod‑core и собираем AAR
+      - name: Force create go.mod and build AAR
         working-directory: teapod-stream/teapod-core
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
         run: |
+          # Удаляем старые файлы модулей (если были)
+          rm -f go.mod go.sum
+          # Создаём новый модуль
+          go mod init teapod-core
+          # Включаем поддержку модулей (на всякий случай)
+          export GO111MODULE=on
+          # Подтягиваем зависимости
+          go mod tidy -go=1.21
+          # Собираем AAR
           gomobile bind -target=android -o teapod-core.aar -androidapi 29 .
 
       - name: Copy AAR to Flutter project
