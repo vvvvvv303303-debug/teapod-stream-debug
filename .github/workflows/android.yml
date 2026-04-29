@@ -51,7 +51,6 @@ jobs:
           fi
           go mod tidy || true
 
-      # 👇 Новый шаг — правим импорты в teapod-core
       - name: Fix teapod-tun2socks import path
         working-directory: teapod-stream/teapod-core
         run: |
@@ -65,9 +64,12 @@ jobs:
           rm -f go.mod go.sum
           go mod init teapod-core
           export GO111MODULE=on
-          # 👇 replace-директива на локальный код
+          
+          # 👇 Две replace-директивы: для основного пакета и для /go
           echo "" >> go.mod
+          echo "replace github.com/Wendor/teapod-tun2socks => ../../teapod-tun2socks" >> go.mod
           echo "replace github.com/Wendor/teapod-tun2socks/go => ../../teapod-tun2socks/go" >> go.mod
+          
           go mod tidy -go=1.26
           gomobile bind -target=android -o teapod-core.aar -androidapi 29 .
 
