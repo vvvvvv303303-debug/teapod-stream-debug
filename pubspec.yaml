@@ -7,6 +7,9 @@ environment:
   sdk: ^3.11.4
 
 dependencies:
+  teapod-core:
+    path: teapod-core
+    
   flutter:
     sdk: flutter
 
