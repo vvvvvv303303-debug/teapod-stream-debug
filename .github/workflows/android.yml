@@ -57,6 +57,24 @@ jobs:
           fi
           go mod tidy || true
 
+      - name: Debug Go module status
+        working-directory: teapod-stream/teapod-core
+        run: |
+          echo "=== Содержимое teapod-core ==="
+          ls -la
+          echo "=== Есть ли go.mod? ==="
+          if [ -f go.mod ]; then
+            cat go.mod
+          else
+            echo "go.mod отсутствует, создаём..."
+            go mod init teapod-core
+            cat go.mod
+          fi
+          echo "=== GO111MODULE ==="
+          go env GO111MODULE
+          echo "=== Попытка go mod tidy ==="
+          go mod tidy || echo "go mod tidy завершился с ошибкой, но это может быть некритично"
+
       - name: Build teapod-core AAR
         working-directory: teapod-stream/teapod-core
         env:
