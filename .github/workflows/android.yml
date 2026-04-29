@@ -31,7 +31,13 @@ jobs:
       - name: Install gomobile
         run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
           gomobile init
+
+      - name: Fix gomobile path in build.sh
+        working-directory: teapod-core
+        run: |
+          sed -i "s|/Users/wendor/go/bin/gomobile|$(which gomobile)|g" build.sh
 
       - name: Build teapod-core AAR
         working-directory: teapod-core
@@ -66,4 +72,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TeapodStream-fixed
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk/app-debug.apk
