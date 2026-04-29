@@ -38,17 +38,20 @@ jobs:
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
           gomobile init
 
-      - name: Initialize Go module in teapod-core
+      - name: Initialize Go module in teapod-core (if missing)
         working-directory: teapod-core
         run: |
           if [ ! -f go.mod ]; then
             go mod init teapod-core
           fi
+          export GO111MODULE=on
+          go mod tidy
 
       - name: Build teapod-core AAR directly with gomobile
         working-directory: teapod-core
         run: |
           export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358
+          export GO111MODULE=on
           gomobile bind -target=android -o teapod-core.aar -androidapi 29 .
 
       - name: Copy AAR to project
