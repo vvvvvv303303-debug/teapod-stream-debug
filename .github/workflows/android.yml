@@ -38,21 +38,17 @@ jobs:
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
           gomobile init
 
-      - name: Fix gomobile path in build.sh
+      - name: Build teapod-core AAR directly with gomobile
         working-directory: teapod-core
         run: |
-          sed -i "s|/Users/wendor/go/bin/gomobile|$(which gomobile)|g" build.sh
-
-      - name: Build teapod-core AAR
-        working-directory: teapod-core
-        run: |
-          chmod +x build.sh
-          ./build.sh build
+          export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358
+          ls -la $ANDROID_NDK_HOME/meta/platforms.json
+          gomobile bind -target=android -o teapod-core.aar -androidapi 29 .
 
       - name: Copy AAR to project
         run: |
           mkdir -p android/app/libs
-          cp teapod-core/outputs/teapod-core-*.aar android/app/libs/
+          cp teapod-core/teapod-core.aar android/app/libs/
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
