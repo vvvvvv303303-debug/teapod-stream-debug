@@ -15,12 +15,12 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.41.7'   # ← конкретная версия вместо 'stable'
+          channel: 'stable'
 
       - name: Apply heartbeat fix
         run: |
-          # Заменяем запрос на абсолютный URL
-          find . -name "ProxyService.kt" -exec sed -i 's|GET /generate_204 HTTP/1.1\r\nHost: $destHost|GET /generate_204 HTTP/1.1\r\nHost: cp.cloudflare.com|g' {} +
+          find . -name "ProxyService.kt" -exec sed -i 's|GET /generate_204 HTTP/1.1\r\nHost: $destHost|GET http://cp.cloudflare.com/generate_204 HTTP/1.1\r\nHost: cp.cloudflare.com|g' {} +
 
       - name: Get dependencies
         run: flutter pub get
