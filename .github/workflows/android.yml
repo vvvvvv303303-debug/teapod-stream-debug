@@ -47,9 +47,15 @@ jobs:
         working-directory: teapod-tun2socks/go
         run: |
           if [ ! -f go.mod ]; then
-            go mod init teapod-tun2socks
+            go mod init github.com/Wendor/teapod-tun2socks/go
           fi
           go mod tidy || true
+
+      # 👇 Новый шаг — правим импорты в teapod-core
+      - name: Fix teapod-tun2socks import path
+        working-directory: teapod-stream/teapod-core
+        run: |
+          find . -name "*.go" -exec sed -i 's|github.com/Wendor/teapod-tun2socks|github.com/Wendor/teapod-tun2socks/go|g' {} +
 
       - name: Force create go.mod and build AAR
         working-directory: teapod-stream/teapod-core
@@ -59,6 +65,9 @@ jobs:
           rm -f go.mod go.sum
           go mod init teapod-core
           export GO111MODULE=on
+          # 👇 replace-директива на локальный код
+          echo "" >> go.mod
+          echo "replace github.com/Wendor/teapod-tun2socks/go => ../../teapod-tun2socks/go" >> go.mod
           go mod tidy -go=1.26
           gomobile bind -target=android -o teapod-core.aar -androidapi 29 .
 
