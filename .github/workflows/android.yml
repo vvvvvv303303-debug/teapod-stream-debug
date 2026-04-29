@@ -1,4 +1,4 @@
-name: Build TeapodStream (fixed heartbeat + core)
+name: Build TeapodStream (Full Source)
 
 on:
   workflow_dispatch:
@@ -11,6 +11,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: teapod-stream
+
+      - name: Clone teapod-tun2socks
+        run: git clone https://github.com/Wendor/teapod-tun2socks.git teapod-tun2socks
 
       - name: Set up Go 1.21
         uses: actions/setup-go@v5
@@ -38,26 +43,31 @@ jobs:
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
           gomobile init
 
-      - name: Initialize Go module in teapod-core (if missing)
-        working-directory: teapod-core
+      - name: Initialize Go modules (if missing)
         run: |
+          cd teapod-tun2socks/go
+          if [ ! -f go.mod ]; then
+            go mod init teapod-tun2socks
+          fi
+          go mod tidy || true
+
+          cd ${{ github.workspace }}/teapod-stream/teapod-core
           if [ ! -f go.mod ]; then
             go mod init teapod-core
           fi
-          export GO111MODULE=on
-          go mod tidy
+          go mod tidy || true
 
-      - name: Build teapod-core AAR directly with gomobile
-        working-directory: teapod-core
+      - name: Build teapod-core AAR
+        working-directory: teapod-stream/teapod-core
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
         run: |
-          export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358
-          export GO111MODULE=on
           gomobile bind -target=android -o teapod-core.aar -androidapi 29 .
 
-      - name: Copy AAR to project
+      - name: Copy AAR to Flutter project
         run: |
-          mkdir -p android/app/libs
-          cp teapod-core/teapod-core.aar android/app/libs/
+          mkdir -p teapod-stream/android/app/libs
+          cp teapod-stream/teapod-core/teapod-core.aar teapod-stream/android/app/libs/
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -66,17 +76,20 @@ jobs:
           channel: 'stable'
 
       - name: Apply heartbeat fix
+        working-directory: teapod-stream
         run: |
           find . -name "ProxyService.kt" -exec sed -i 's|GET /generate_204 HTTP/1.1\r\nHost: $destHost|GET http://cp.cloudflare.com/generate_204 HTTP/1.1\r\nHost: cp.cloudflare.com|g' {} +
 
       - name: Get Flutter dependencies
+        working-directory: teapod-stream
         run: flutter pub get
 
       - name: Build APK (debug)
+        working-directory: teapod-stream
         run: flutter build apk --debug --no-tree-shake-icons
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TeapodStream-fixed
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: teapod-stream/build/app/outputs/flutter-apk/app-debug.apk
