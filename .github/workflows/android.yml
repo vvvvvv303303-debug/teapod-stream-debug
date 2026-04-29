@@ -1,4 +1,4 @@
-name: Build Flutter APK (Heartbeat Fixed)
+name: Build TeapodStream with fix
 
 on:
   workflow_dispatch:
@@ -15,22 +15,20 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.7'   # Dart 3.11.7 подходит под требование ^3.11.4
-          channel: 'stable'
+          flutter-version: 'stable'
 
-      - name: Create missing directories and placeholder file
+      - name: Apply heartbeat fix
         run: |
-          mkdir -p assets/binaries
-          mkdir -p android/app/libs
-          touch android/app/libs/teapod-core.aar
+          # Заменяем запрос на абсолютный URL
+          find . -name "ProxyService.kt" -exec sed -i 's|GET /generate_204 HTTP/1.1\r\nHost: $destHost|GET /generate_204 HTTP/1.1\r\nHost: cp.cloudflare.com|g' {} +
 
-      - name: Get Flutter dependencies
+      - name: Get dependencies
         run: flutter pub get
 
-      - name: Build debug APK
+      - name: Build APK
         run: flutter build apk --debug --no-tree-shake-icons
 
-      - name: Upload APK artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: TeapodStream-fixed
