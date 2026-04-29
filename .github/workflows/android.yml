@@ -23,20 +23,21 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK & NDK
+      - name: Setup Android NDK
         run: |
-          # Устанавливаем sdkmanager и принимаем лицензии
-          sudo apt-get update
-          sudo apt-get install -y sdkmanager
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+          # Android SDK уже предустановлен, sdkmanager лежит здесь
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
 
-          # Устанавливаем NDK 28.2.13676358 (ту же версию, которую ждёт скрипт)
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "ndk;28.2.13676358"
+          # Принимаем лицензии
+          yes | $SDKMANAGER --licenses
+
+          # Устанавливаем NDK нужной версии
+          $SDKMANAGER "ndk;28.2.13676358"
 
           # Убеждаемся, что путь существует
           ls -la $ANDROID_SDK_ROOT/ndk/28.2.13676358
 
-          # Устанавливаем переменную окружения
+          # Записываем ANDROID_NDK_HOME в окружение
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358" >> $GITHUB_ENV
 
       - name: Install gomobile
