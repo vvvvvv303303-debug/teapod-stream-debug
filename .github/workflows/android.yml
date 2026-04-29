@@ -25,20 +25,12 @@ jobs:
 
       - name: Setup Android NDK
         run: |
-          # Android SDK уже предустановлен, sdkmanager лежит здесь
           SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-
-          # Принимаем лицензии
           yes | $SDKMANAGER --licenses
-
-          # Устанавливаем NDK нужной версии
           $SDKMANAGER "ndk;28.2.13676358"
-
-          # Убеждаемся, что путь существует
-          ls -la $ANDROID_SDK_ROOT/ndk/28.2.13676358
-
-          # Записываем ANDROID_NDK_HOME в окружение
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358" >> $GITHUB_ENV
+          echo "$ANDROID_SDK_ROOT/ndk/28.2.13676358"
+          ls -la $ANDROID_SDK_ROOT/ndk/28.2.13676358/
 
       - name: Install gomobile
         run: |
@@ -56,8 +48,6 @@ jobs:
         run: |
           chmod +x build.sh
           ./build.sh build
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
 
       - name: Copy AAR to project
         run: |
